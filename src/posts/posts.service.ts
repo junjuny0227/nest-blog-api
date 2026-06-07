@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -20,6 +16,7 @@ export class PostsService {
   async findAll(query: PaginatePostDto) {
     const { page, limit } = query;
     const [data, total] = await this.postRepo.findAndCount({
+      relations: { author: true },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -28,7 +25,7 @@ export class PostsService {
   }
 
   async findOne(id: number): Promise<Post> {
-    const post = await this.postRepo.findOne({ where: { id } });
+    const post = await this.postRepo.findOne({ where: { id }, relations: { author: true } });
     if (!post) {
       throw new NotFoundException(`게시글 #${id}를 찾을 수 없습니다.`);
     }
