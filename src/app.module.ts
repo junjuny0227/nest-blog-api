@@ -15,9 +15,9 @@ import { UsersModule } from './users/users.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
-      database: 'blog.sqlite',
+      database: process.env.DATABASE_PATH ?? 'blog.sqlite',
       entities: [User, Post, Comment],
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
     UsersModule,
     AuthModule,
