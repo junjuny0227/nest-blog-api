@@ -7,10 +7,8 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
-import {
-  CurrentUser,
-  JwtPayload,
-} from '../common/decorators/current-user.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import type { JwtPayload } from '../common/types/jwt-payload.interface';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CommentsService } from './comments.service';
 

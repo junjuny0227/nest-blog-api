@@ -1,12 +1,9 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PostsService } from '../posts/posts.service';
+import { Post } from '../posts/entities/post.entity';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { PaginateCommentDto } from './dto/paginate-comment.dto';
 import { Comment } from './entities/comment.entity';
 
 @Injectable()
@@ -14,21 +11,40 @@ export class CommentsService {
   constructor(
     @InjectRepository(Comment)
     private readonly commentRepo: Repository<Comment>,
-    private readonly postsService: PostsService,
+    @InjectRepository(Post)
+    private readonly postRepo: Repository<Post>,
   ) {}
 
-  async create(postId: number, dto: CreateCommentDto, authorId: number): Promise<Comment> {
-    await this.postsService.findOne(postId);
-    const comment = this.commentRepo.create({ ...dto, postId, authorId });
-    return this.commentRepo.save(comment);
+  private async assertPostExists(postId: number): Promise<void> {
+    const post = await this.postRepo.findOne({ where: { id: postId } });
+    if (!post) {
+      throw new NotFoundException(`게시글 #${postId}를 찾을 수 없습니다.`);
+    }
   }
 
-  async findByPost(postId: number): Promise<Comment[]> {
-    await this.postsService.findOne(postId);
-    return this.commentRepo.find({
+  async create(postId: number, dto: CreateCommentDto, authorId: number): Promise<Comment> {
+    await this.assertPostExists(postId);
+    const comment = this.commentRepo.create({ ...dto, postId, authorId });
+    const saved = await this.commentRepo.save(comment);
+    return this.commentRepo.findOne({
+      where: { id: saved.id },
+      relations: { author: true },
+    }) as Promise<Comment>;
+  }
+
+  async findByPost(
+    postId: number,
+    query: PaginateCommentDto,
+  ): Promise<{ data: Comment[]; total: number; page: number; limit: number }> {
+    await this.assertPostExists(postId);
+    const [data, total] = await this.commentRepo.findAndCount({
       where: { postId },
+      relations: { author: true },
       order: { createdAt: 'ASC' },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
     });
+    return { data, total, page: query.page, limit: query.limit };
   }
 
   async remove(commentId: number, userId: number): Promise<void> {
