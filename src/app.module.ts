@@ -28,7 +28,11 @@ import { UsersModule } from './users/users.module';
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
     {
       provide: APP_PIPE,
-      useValue: new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+      useValue: new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
     },
   ],
 })
