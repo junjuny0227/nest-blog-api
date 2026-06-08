@@ -17,7 +17,7 @@ import { UsersModule } from './users/users.module';
       type: 'better-sqlite3',
       database: process.env.DATABASE_PATH ?? 'blog.sqlite',
       entities: [User, Post, Comment],
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: process.env.TYPEORM_SYNCHRONIZE !== 'false',
     }),
     UsersModule,
     AuthModule,
