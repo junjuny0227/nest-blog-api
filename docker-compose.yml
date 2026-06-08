@@ -1,0 +1,16 @@
+services:
+  api:
+    build: .
+    ports:
+      - "80:3000"
+    environment:
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      DATABASE_PATH: /app/data/blog.sqlite
+      PORT: 3000
+    volumes:
+      - sqlite_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
