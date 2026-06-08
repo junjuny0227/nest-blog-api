@@ -1,8 +1,11 @@
-FROM node:20 AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add python3 make g++
+
 COPY package*.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 COPY . .
 RUN npm run build && npm prune --omit=dev
