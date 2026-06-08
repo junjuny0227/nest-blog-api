@@ -2,6 +2,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 RUN --mount=type=cache,target=/var/cache/apk \
+    sed -i 's/dl-cdn.alpinelinux.org/mirror.kakao.com/g' /etc/apk/repositories && \
     apk add python3 make g++
 
 COPY package*.json ./
